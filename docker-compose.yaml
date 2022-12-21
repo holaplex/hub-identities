@@ -1,14 +1,5 @@
 version: '3.8'
 services:
-  db:
-    image: postgres:15.1
-    container_name: db
-    env_file:
-      - .env
-    ports:
-      - 5437:5432
-    volumes: 
-      - holaplex_rust_boilerplate_db:/var/lib/postgresql/data
   redpanda:
     image: docker.redpanda.com/vectorized/redpanda:latest
     container_name: redpanda
@@ -38,6 +29,3 @@ services:
     - 9092:9092
     - 28082:28082
     - 29092:29092
-volumes:
-  holaplex_rust_boilerplate_db:
-    driver: local

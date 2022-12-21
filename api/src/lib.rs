@@ -1,9 +1,8 @@
-mod db;
 mod graphql;
 
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql_poem::GraphQL;
-use holaplex_rust_boilerplate_core::prelude::*;
+use hub_identities_core::prelude::*;
 use poem::{get, handler, listener::TcpListener, post, web::Html, IntoResponse, Route, Server};
 
 use crate::graphql::schema::build_schema;
