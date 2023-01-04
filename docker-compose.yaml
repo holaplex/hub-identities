@@ -1,31 +1,63 @@
 version: '3.8'
 services:
-  redpanda:
-    image: docker.redpanda.com/vectorized/redpanda:latest
-    container_name: redpanda
-    command:
-    - redpanda
-    - start
-    - --smp
-    - '1'
-    - --reserve-memory
-    - 0M
-    - --overprovisioned
-    - --set redpanda.empty_seed_starts_cluster=false
-    - --set redpanda.auto_create_topics_enabled=true
-    - --seeds "redpanda-1:33145"
-    - --kafka-addr
-    - PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
-    - --advertise-kafka-addr
-    - PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
-    - --pandaproxy-addr
-    - PLAINTEXT://0.0.0.0:28082,OUTSIDE://0.0.0.0:8082
-    - --advertise-pandaproxy-addr
-    - PLAINTEXT://redpanda:28082,OUTSIDE://localhost:8082
-    - --advertise-rpc-addr redpanda-1:33145
+  kratos-selfservice-ui-node:
+    image: oryd/kratos-selfservice-ui-node:v0.11.0
+    environment:
+      - KRATOS_PUBLIC_URL=http://kratos:4433/
+      - KRATOS_BROWSER_URL=http://127.0.0.1:4433/
     ports:
-    - 8081:8081
-    - 8082:8082
-    - 9092:9092
-    - 28082:28082
-    - 29092:29092
+      - '4455:3000'
+    networks:
+      - intranet
+    restart: on-failure
+  mailslurper:
+    image: oryd/mailslurper:latest-smtps
+    ports:
+      - '4436:4436'
+      - '4437:4437'
+    networks:
+      - intranet
+  kratos-migrate:
+    image: oryd/kratos:v0.11.0
+    command: -c /etc/config/kratos/kratos.yaml migrate sql -e --yes
+    volumes:
+      - type: bind
+        source: ./kratos
+        target: /etc/config/kratos
+    networks:
+      - intranet
+    environment:
+      - DSN=postgres://kratos:secret@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+  kratos:
+    image: oryd/kratos:v0.11.0
+    networks:
+      - intranet
+    command: serve -c /etc/config/kratos/kratos.yaml --dev --watch-courier
+    volumes:
+      - type: bind
+        source: ./kratos
+        target: /etc/config/kratos
+    depends_on:
+      - kratos-migrate
+    ports:
+      - 4433:4433 # public
+      - 4434:4434 # admin
+    environment:
+      - DSN=postgres://kratos:secret@db:5432/kratos?sslmode=disable&max_conns=20&max_idle_conns=4
+  db:
+    image: postgres:15.1
+    environment:
+      - POSTGRES_USER=kratos
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=kratos
+    ports:
+      - 5438:5432
+    volumes: 
+      - kratos_db:/var/lib/postgresql/data
+    networks:
+     - intranet
+networks:
+  intranet:
+volumes:
+  kratos_db:
+    driver: local
