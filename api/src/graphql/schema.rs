@@ -1,13 +1,13 @@
 use async_graphql::{
     extensions::{ApolloTracing, Logger},
-    EmptySubscription, Schema,
+    EmptySubscription, Schema, EmptyMutation,
 };
 use hub_identities_core::prelude::*;
 use ory::kratos::client::Client;
 
-use crate::graphql::{mutation::Mutation, query::Query};
+use crate::graphql::query::Query;
 
-pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
+pub type AppSchema = Schema<Query, EmptyMutation, EmptySubscription>;
 
 pub struct Context {
     kratos: Client,
@@ -25,7 +25,7 @@ impl Context {
 pub async fn build_schema(context: Context) -> Result<AppSchema> {
     // todo! Shared struct instead of db
 
-    let schema = Schema::build(Query::default(), Mutation::default(), EmptySubscription)
+    let schema = Schema::build(Query::default(), EmptyMutation, EmptySubscription)
         .extension(ApolloTracing)
         .extension(Logger)
         .data(context.kratos)
