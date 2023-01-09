@@ -7,6 +7,12 @@ use poem::{get, handler, listener::TcpListener, post, web::Html, IntoResponse, R
 
 use crate::graphql::schema::{build_schema, Context};
 
+#[derive(Debug, Parser)]
+pub struct Args {
+    #[arg(short, long, env, default_value = "3001")]
+    port: u16,
+}
+
 #[handler]
 async fn playground() -> impl IntoResponse {
     Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
@@ -17,6 +23,8 @@ pub async fn main() -> Result<()> {
     if cfg!(debug_assertions) {
         dotenv::dotenv().ok();
     }
+
+    let Args { port } = Args::parse();
 
     env_logger::builder()
         .filter_level(if cfg!(debug_assertions) {
@@ -31,7 +39,7 @@ pub async fn main() -> Result<()> {
 
     let schema = build_schema(context).await?;
 
-    Server::new(TcpListener::bind("127.0.0.1:3001"))
+    Server::new(TcpListener::bind(format!("127.0.0.1:{port}")))
         .run(
             Route::new()
                 .at("/graphql", post(GraphQL::new(schema)))
