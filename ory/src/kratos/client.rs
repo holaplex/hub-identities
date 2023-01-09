@@ -1,33 +1,79 @@
-use reqwest;
-use serde::Deserialize;
+use anyhow::{Context, Result};
 use clap::Parser;
+use reqwest::{Client as HttpClient, Url};
+use serde::{de::DeserializeOwned, Deserialize};
 
-/// Arguments for establishing a database connection
 #[derive(Debug, Parser)]
-pub struct KratosArgs {
+pub struct Args {
     #[arg(long, env)]
-    base_endpoint: String,
-    #[arg(long, env)]
-    authorization: String   
+    kratos_admin_endpoint: String,
 }
 
 /// Ory API client
 pub struct Client {
-    base_endpoint: String,
-    authorization: String,
+    base_endpoint: Url,
+    http: HttpClient,
 }
 
-#[derive(Deserialize)]
-pub struct Identity {
-    
+#[derive(Debug, Deserialize)]
+pub struct IdentityResponse<T> {
+    pub id: String,
+    #[serde(rename(deserialize = "traits"))]
+    pub identity_trait: T,
+    pub created_at: String,
+    pub updated_at: String,
+    pub state: String,
 }
 
 impl Client {
-    pub fn new(base_endpoint: String, authorization: String) -> Self {
-        Self{ base_endpoint, authorization }
+    pub fn new() -> Result<Self> {
+        let Args {
+            kratos_admin_endpoint,
+        } = Args::parse();
+
+        let http = HttpClient::new();
+
+        let base_endpoint =
+            Url::parse(&kratos_admin_endpoint).context("failed to parse kratos admin endpoint")?;
+
+        Ok(Self {
+            base_endpoint,
+            http,
+        })
     }
 
-    pub fn get_identity(&self) -> Result<Identity> {
-        reqwest
+    /// get a Kratos identities by its id
+    pub async fn get_identity<T: DeserializeOwned>(
+        &self,
+        id: String,
+    ) -> Result<IdentityResponse<T>> {
+        let path = format!("/admin/identities/{id}");
+        let url = self.base_endpoint.join(&path)?;
+
+        let req = self.http.get(url);
+
+        let response = req.send().await?.text().await?;
+
+        Ok(serde_json::from_str(&response)?)
+    }
+
+    /// list Kratos identities
+    pub async fn list_identities<T: DeserializeOwned>(
+        &self,
+        page: Option<i64>,
+        per_page: Option<i64>,
+    ) -> Result<Vec<IdentityResponse<T>>> {
+        let per_page = per_page.unwrap_or(250);
+        let page = page.unwrap_or(1);
+
+        let path = format!("/admin/identities?page={page}&per_page={per_page}");
+
+        let url = self.base_endpoint.join(&path)?;
+
+        let req = self.http.get(url);
+
+        let response = req.send().await?.text().await?;
+
+        Ok(serde_json::from_str(&response)?)
     }
 }

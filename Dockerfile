@@ -3,7 +3,9 @@ WORKDIR /app
 
 FROM chef AS planner
 COPY Cargo.* .
-COPY src src
+COPY api api
+COPY core core
+COPY ory ory
 RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS builder
@@ -12,8 +14,10 @@ COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY Cargo.* .
-COPY src src
-RUN cargo build --release
+COPY api api
+COPY core core
+COPY ory ory
+RUN cargo build --release --bin hub-identities-api
 
 
 FROM debian:bullseye-slim as base
@@ -26,6 +30,6 @@ RUN apt-get update -y && \
   && \
   rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/holaplex-hub-rust-boilerplate /usr/local/bin
-ENTRYPOINT [ "/usr/local/bin/holaplex-hub-rust-boilerplate" ]
+COPY --from=builder /app/target/release/hub-identities-api /usr/local/bin
+ENTRYPOINT [ "/usr/local/bin/hub-identities-api" ]
 

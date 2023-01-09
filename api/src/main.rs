@@ -5,7 +5,7 @@ use async_graphql_poem::GraphQL;
 use hub_identities_core::prelude::*;
 use poem::{get, handler, listener::TcpListener, post, web::Html, IntoResponse, Route, Server};
 
-use crate::graphql::schema::build_schema;
+use crate::graphql::schema::{build_schema, Context};
 
 #[handler]
 async fn playground() -> impl IntoResponse {
@@ -13,7 +13,7 @@ async fn playground() -> impl IntoResponse {
 }
 
 #[tokio::main]
-pub async fn start() -> Result<()> {
+pub async fn main() -> Result<()> {
     if cfg!(debug_assertions) {
         dotenv::dotenv().ok();
     }
@@ -27,7 +27,9 @@ pub async fn start() -> Result<()> {
         .parse_default_env()
         .init();
 
-    let schema = build_schema().await?;
+    let context = Context::new()?;
+
+    let schema = build_schema(context).await?;
 
     Server::new(TcpListener::bind("127.0.0.1:3001"))
         .run(
