@@ -8,12 +8,20 @@ pub struct Query;
 
 #[Object(name = "UserQuery")]
 impl Query {
-    #[graphql(entity)]
-    async fn user(&self, ctx: &Context<'_>, #[graphql(key)] id: String) -> Result<User> {
+    async fn user(&self, ctx: &Context<'_>, id: uuid::Uuid) -> Result<User> {
         let kratos = ctx.data::<Client>()?;
         let identity_response = kratos.get_identity::<IdentityTrait>(id).await?;
 
         Ok(identity_response.into())
+    }
+
+    #[graphql(entity)]
+    async fn find_user_by_id(
+        &self,
+        ctx: &Context<'_>,
+        #[graphql(key)] id: uuid::Uuid,
+    ) -> Result<User> {
+        Ok(self.user(ctx, id).await?)
     }
 
     async fn users(

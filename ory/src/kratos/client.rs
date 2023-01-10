@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use reqwest::{Client as HttpClient, Url};
 use serde::{de::DeserializeOwned, Deserialize};
+use uuid::Uuid;
 
 #[derive(Debug, Parser)]
 pub struct Args {
@@ -17,7 +18,7 @@ pub struct Client {
 
 #[derive(Debug, Deserialize)]
 pub struct IdentityResponse<T> {
-    pub id: String,
+    pub id: uuid::Uuid,
     #[serde(rename(deserialize = "traits"))]
     pub identity_trait: T,
     pub created_at: String,
@@ -43,10 +44,7 @@ impl Client {
     }
 
     /// get a Kratos identities by its id
-    pub async fn get_identity<T: DeserializeOwned>(
-        &self,
-        id: String,
-    ) -> Result<IdentityResponse<T>> {
+    pub async fn get_identity<T: DeserializeOwned>(&self, id: Uuid) -> Result<IdentityResponse<T>> {
         let path = format!("/admin/identities/{id}");
         let url = self.base_endpoint.join(&path)?;
 
