@@ -18,7 +18,7 @@ pub struct IdentityTrait {
 
 #[derive(SimpleObject)]
 pub struct User {
-    id: String,
+    id: uuid::Uuid,
     first_name: String,
     last_name: String,
     email: String,

@@ -1,6 +1,6 @@
 use async_graphql::{
     extensions::{ApolloTracing, Logger},
-    EmptySubscription, Schema, EmptyMutation,
+    EmptyMutation, EmptySubscription, Schema,
 };
 use hub_identities_core::prelude::*;
 use ory::kratos::client::Client;
