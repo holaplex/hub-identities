@@ -21,7 +21,7 @@ impl Query {
         ctx: &Context<'_>,
         #[graphql(key)] id: uuid::Uuid,
     ) -> Result<User> {
-        Ok(self.user(ctx, id).await?)
+        self.user(ctx, id).await
     }
 
     async fn users(
