@@ -28,3 +28,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ vars.DOCKERHUB_ORG }}/hub-identities:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
