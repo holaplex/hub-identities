@@ -18,6 +18,9 @@ async fn playground() -> impl IntoResponse {
     Html(playground_source(GraphQLPlaygroundConfig::new("/graphql")))
 }
 
+#[handler]
+async fn health() {}
+
 #[tokio::main]
 pub async fn main() -> Result<()> {
     if cfg!(debug_assertions) {
@@ -42,6 +45,7 @@ pub async fn main() -> Result<()> {
     Server::new(TcpListener::bind(format!("127.0.0.1:{port}")))
         .run(
             Route::new()
+                .at("/health", get(health))
                 .at("/graphql", post(GraphQL::new(schema)))
                 .at("/playground", get(playground)),
         )
