@@ -42,7 +42,7 @@ pub async fn main() -> Result<()> {
 
     let schema = build_schema(context).await?;
 
-    Server::new(TcpListener::bind(format!("127.0.0.1:{port}")))
+    Server::new(TcpListener::bind(format!("0.0.0.0:{port}")))
         .run(
             Route::new()
                 .at("/health", get(health))
