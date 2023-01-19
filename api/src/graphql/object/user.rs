@@ -12,7 +12,7 @@ pub struct NameField {
 
 #[derive(Debug, Deserialize)]
 pub struct IdentityTrait {
-    pub name: NameField,
+    pub name: Option<NameField>,
     pub email: String,
 }
 
@@ -32,22 +32,19 @@ impl From<IdentityResponse<IdentityTrait>> for User {
             id,
             created_at,
             updated_at,
-            identity_trait:
-                IdentityTrait {
-                    email,
-                    name:
-                        NameField {
-                            first_name,
-                            last_name,
-                        },
-                },
+            identity_trait: IdentityTrait { email, name },
             ..
         }: IdentityResponse<IdentityTrait>,
     ) -> Self {
+        let name = name.unwrap_or(NameField {
+            first_name: String::new(),
+            last_name: String::new(),
+        });
+
         Self {
             id,
-            first_name,
-            last_name,
+            first_name: name.first_name,
+            last_name: name.last_name,
             email,
             created_at,
             updated_at,
