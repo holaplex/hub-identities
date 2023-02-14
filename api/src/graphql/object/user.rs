@@ -16,7 +16,7 @@ pub struct IdentityTrait {
     pub email: String,
 }
 
-#[derive(SimpleObject)]
+#[derive(SimpleObject, Clone)]
 pub struct User {
     id: uuid::Uuid,
     first_name: String,
