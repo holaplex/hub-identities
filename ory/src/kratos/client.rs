@@ -1,22 +1,22 @@
 use anyhow::{Context, Result};
-use clap::Parser;
 use reqwest::{Client as HttpClient, Url};
 use serde::{de::DeserializeOwned, Deserialize};
 use uuid::Uuid;
 
-#[derive(Debug, Parser)]
-pub struct Args {
+#[derive(Debug, clap::Args)]
+pub struct KratosArgs {
     #[arg(long, env)]
-    kratos_admin_endpoint: String,
+    pub kratos_admin_endpoint: String,
 }
 
 /// Ory API client
+#[derive(Clone)]
 pub struct Client {
     base_endpoint: Url,
     http: HttpClient,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct IdentityResponse<T> {
     pub id: uuid::Uuid,
     #[serde(rename(deserialize = "traits"))]
@@ -27,11 +27,7 @@ pub struct IdentityResponse<T> {
 }
 
 impl Client {
-    pub fn new() -> Result<Self> {
-        let Args {
-            kratos_admin_endpoint,
-        } = Args::parse();
-
+    pub fn new(kratos_admin_endpoint: String) -> Result<Self> {
         let http = HttpClient::new();
 
         let base_endpoint =
