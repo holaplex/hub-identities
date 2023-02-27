@@ -4,7 +4,6 @@ WORKDIR /app
 FROM chef AS planner
 COPY Cargo.* .
 COPY api api
-COPY core core
 COPY ory ory
 RUN cargo chef prepare --recipe-path recipe.json
 
@@ -15,7 +14,6 @@ RUN cargo chef cook --release --recipe-path recipe.json
 # Build application
 COPY Cargo.* .
 COPY api api
-COPY core core
 COPY ory ory
 RUN cargo build --release --bin holaplex-hub-identities
 
