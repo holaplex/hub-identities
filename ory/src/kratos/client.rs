@@ -1,19 +1,29 @@
-use anyhow::{Context, Result};
-use reqwest::{Client as HttpClient, Url};
+use std::str::FromStr;
+
+use anyhow::{anyhow, Context, Error, Result};
+use ory_openapi_generated_client::{
+    apis::{
+        configuration::Configuration,
+        identity_api::{get_identity, list_identities},
+    },
+    models::{Identity, IdentityState},
+};
 use serde::{de::DeserializeOwned, Deserialize};
 use uuid::Uuid;
 
 #[derive(Debug, clap::Args)]
 pub struct KratosArgs {
+    #[arg(long, env, default_value = "http://127.0.0.1:4434")]
+    pub ory_base_url: String,
     #[arg(long, env)]
-    pub kratos_admin_endpoint: String,
+    pub ory_auth_token: String,
 }
 
 /// Ory API client
 #[derive(Clone)]
 pub struct Client {
-    base_endpoint: Url,
-    http: HttpClient,
+    base_url: String,
+    auth_token: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -23,32 +33,28 @@ pub struct IdentityResponse<T> {
     pub identity_trait: T,
     pub created_at: String,
     pub updated_at: String,
-    pub state: String,
+    pub state: IdentityState,
 }
 
 impl Client {
-    pub fn new(kratos_admin_endpoint: String) -> Result<Self> {
-        let http = HttpClient::new();
-
-        let base_endpoint =
-            Url::parse(&kratos_admin_endpoint).context("failed to parse kratos admin endpoint")?;
-
+    pub fn new(base_url: String, auth_token: String) -> Result<Self> {
         Ok(Self {
-            base_endpoint,
-            http,
+            base_url,
+            auth_token,
         })
     }
 
     /// get a Kratos identities by its id
     pub async fn get_identity<T: DeserializeOwned>(&self, id: Uuid) -> Result<IdentityResponse<T>> {
-        let path = format!("/admin/identities/{id}");
-        let url = self.base_endpoint.join(&path)?;
+        let configuration = Configuration {
+            base_path: self.base_url.clone(),
+            bearer_access_token: Some(self.auth_token.clone()),
+            ..Default::default()
+        };
 
-        let req = self.http.get(url);
+        let get_identity_response = get_identity(&configuration, &id.to_string(), None).await?;
 
-        let response = req.send().await?.text().await?;
-
-        Ok(serde_json::from_str(&response)?)
+        Ok(get_identity_response.try_into()?)
     }
 
     /// list Kratos identities
@@ -57,17 +63,52 @@ impl Client {
         page: Option<i64>,
         per_page: Option<i64>,
     ) -> Result<Vec<IdentityResponse<T>>> {
-        let per_page = per_page.unwrap_or(250);
-        let page = page.unwrap_or(1);
+        let configuration = Configuration {
+            base_path: self.base_url.clone(),
+            bearer_access_token: Some(self.auth_token.clone()),
+            ..Default::default()
+        };
 
-        let path = format!("/admin/identities?page={page}&per_page={per_page}");
+        let list_identities_response =
+            list_identities(&configuration, per_page, page, None).await?;
 
-        let url = self.base_endpoint.join(&path)?;
+        Ok(list_identities_response
+            .into_iter()
+            .map(TryInto::try_into)
+            .collect::<Result<Vec<IdentityResponse<T>>>>()?)
+    }
+}
 
-        let req = self.http.get(url);
+impl<T: DeserializeOwned> TryFrom<Identity> for IdentityResponse<T> {
+    type Error = Error;
 
-        let response = req.send().await?.text().await?;
+    fn try_from(value: Identity) -> std::result::Result<Self, Self::Error> {
+        let traits = value
+            .traits
+            .ok_or_else(|| anyhow!("no traits on the identity"))?;
 
-        Ok(serde_json::from_str(&response)?)
+        let identity_trait: T = serde_json::from_value(traits)?;
+
+        let id = Uuid::from_str(&value.id).context("unable to convert identity id to uuid")?;
+
+        let created_at = value
+            .created_at
+            .ok_or_else(|| anyhow!("no created at on the identity"))?;
+
+        let updated_at = value
+            .updated_at
+            .ok_or_else(|| anyhow!("no updated at on the identity"))?;
+
+        let state = value
+            .state
+            .ok_or_else(|| anyhow!("no state on the identity"))?;
+
+        Ok(Self {
+            id,
+            identity_trait,
+            created_at,
+            updated_at,
+            state,
+        })
     }
 }

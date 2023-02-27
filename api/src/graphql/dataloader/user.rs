@@ -5,9 +5,9 @@ use async_graphql::{
 };
 use ory::kratos::client::Client;
 use poem::async_trait;
-use uuid::Uuid;
+use hub_core::uuid::Uuid;
 
-use crate::graphql::object::user::User;
+use crate::graphql::object::User;
 
 #[derive(Clone)]
 pub struct Loader {

@@ -1,5 +1,5 @@
 use async_graphql::{ComplexObject, Context, Result, SimpleObject};
-use uuid::Uuid;
+use hub_core::uuid::Uuid;
 
 use crate::{graphql::object::user::User, AppContext};
 

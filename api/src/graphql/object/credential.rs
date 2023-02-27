@@ -5,16 +5,16 @@ use crate::{graphql::object::user::User, AppContext};
 
 #[derive(SimpleObject)]
 #[graphql(complex)]
-pub struct Member {
+pub struct Credential {
     #[graphql(external)]
-    pub user_id: Uuid,
+    pub created_by_id: Uuid,
 }
 
 #[ComplexObject]
-impl Member {
-    async fn user(&self, ctx: &Context<'_>) -> Result<Option<User>> {
+impl Credential {
+    async fn created_by(&self, ctx: &Context<'_>) -> Result<Option<User>> {
         let AppContext { user_loader, .. } = ctx.data::<AppContext>()?;
 
-        user_loader.load_one(self.user_id).await
+        user_loader.load_one(self.created_by_id).await
     }
 }

@@ -1,6 +1,6 @@
 use async_graphql::{Context, Object, Result};
-
-use crate::graphql::object::member::Member;
+use hub_core::uuid::Uuid;
+use crate::graphql::object::Member;
 
 #[derive(Default)]
 pub struct Query;
@@ -11,7 +11,7 @@ impl Query {
     async fn find_member_by_user_id(
         &self,
         _ctx: &Context<'_>,
-        #[graphql(key)] user_id: uuid::Uuid,
+        #[graphql(key)] user_id: Uuid,
     ) -> Result<Member> {
         Ok(Member { user_id })
     }

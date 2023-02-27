@@ -5,7 +5,7 @@ use async_graphql::{
     http::{playground_source, GraphQLPlaygroundConfig},
 };
 use async_graphql_poem::{GraphQLRequest, GraphQLResponse};
-use hub_identities_core::prelude::*;
+use hub_core::{clap, tokio};
 use ory::kratos::client::Client;
 use poem::{
     get, handler,
@@ -21,7 +21,8 @@ use crate::graphql::{
     schema::{build_schema, AppState},
 };
 
-#[derive(Debug, clap::Parser)]
+#[derive(Debug, clap::Args)]
+#[command(version, author, about)]
 pub struct Args {
     #[arg(short, long, env, default_value = "3001")]
     pub port: u16,
@@ -64,36 +65,30 @@ async fn graphql_handler(
         .into())
 }
 
-#[tokio::main]
-pub async fn main() -> Result<()> {
-    if cfg!(debug_assertions) {
-        dotenv::dotenv().ok();
-    }
+pub fn main() {
+    let opts = hub_core::StartConfig {
+        service_name: "hub-credentials",
+    };
 
-    let Args { port, kratos } = Args::parse();
+    hub_core::run(opts, |common, args| {
+        let Args { port, kratos } = args;
 
-    env_logger::builder()
-        .filter_level(if cfg!(debug_assertions) {
-            log::LevelFilter::Debug
-        } else {
-            log::LevelFilter::Info
+        common.rt.block_on(async move {
+            let kratos = Client::new(kratos.ory_base_url, kratos.ory_auth_token)?;
+
+            let schema = build_schema();
+
+            let state = AppState::new(schema, kratos);
+
+            Server::new(TcpListener::bind(format!("0.0.0.0:{port}")))
+                .run(
+                    Route::new()
+                        .at("/health", get(health))
+                        .at("/graphql", post(graphql_handler).with(AddData::new(state)))
+                        .at("/playground", get(playground)),
+                )
+                .await
+                .map_err(Into::into)
         })
-        .parse_default_env()
-        .init();
-
-    let kratos = Client::new(kratos.kratos_admin_endpoint)?;
-
-    let schema = build_schema();
-
-    let state = AppState::new(schema, kratos);
-
-    Server::new(TcpListener::bind(format!("0.0.0.0:{port}")))
-        .run(
-            Route::new()
-                .at("/health", get(health))
-                .at("/graphql", post(graphql_handler).with(AddData::new(state)))
-                .at("/playground", get(playground)),
-        )
-        .await
-        .map_err(Into::into)
+    })
 }

@@ -1,4 +1,4 @@
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [workspace]
-members = ["api", "core", "ory"]
+members = ["api", "ory"]
 resolver = "2"

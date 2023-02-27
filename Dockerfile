@@ -17,19 +17,19 @@ COPY Cargo.* .
 COPY api api
 COPY core core
 COPY ory ory
-RUN cargo build --release --bin hub-identities-api
+RUN cargo build --release --bin holaplex-hub-identities
 
 
 FROM debian:bullseye-slim as base
 WORKDIR /app
 RUN apt-get update -y && \
-  apt-get install -y \
+  apt-get install -y --no-install-recommends \
     ca-certificates \
     libpq5 \
     libssl1.1 \
   && \
   rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/hub-identities-api /usr/local/bin
-ENTRYPOINT [ "/usr/local/bin/hub-identities-api" ]
+COPY --from=builder /app/target/release/holaplex-hub-identities /usr/local/bin
+ENTRYPOINT [ "/usr/local/bin/holaplex-hub-identities" ]
 

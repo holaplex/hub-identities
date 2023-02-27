@@ -1,6 +1,7 @@
 use async_graphql::SimpleObject;
-use hub_identities_core::prelude::*;
 use ory::kratos::client::IdentityResponse;
+use serde::Deserialize;
+use hub_core::uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
 pub struct NameField {
@@ -18,7 +19,7 @@ pub struct IdentityTrait {
 
 #[derive(SimpleObject, Clone)]
 pub struct User {
-    id: uuid::Uuid,
+    id: Uuid,
     first_name: String,
     last_name: String,
     email: String,
