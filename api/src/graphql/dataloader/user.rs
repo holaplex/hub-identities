@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use async_graphql::{
     dataloader::Loader as DataLoader, futures_util::future::try_join_all, FieldError, Result,
 };
+use hub_core::uuid::Uuid;
 use ory::kratos::client::Client;
 use poem::async_trait;
-use hub_core::uuid::Uuid;
 
 use crate::graphql::object::User;
 
