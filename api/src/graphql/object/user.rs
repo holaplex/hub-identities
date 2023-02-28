@@ -1,7 +1,7 @@
 use async_graphql::SimpleObject;
+use hub_core::uuid::Uuid;
 use ory::kratos::client::IdentityResponse;
 use serde::Deserialize;
-use hub_core::uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
 pub struct NameField {

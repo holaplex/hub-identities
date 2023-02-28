@@ -54,7 +54,7 @@ impl Client {
 
         let get_identity_response = get_identity(&configuration, &id.to_string(), None).await?;
 
-        Ok(get_identity_response.try_into()?)
+        get_identity_response.try_into()
     }
 
     /// list Kratos identities
@@ -72,10 +72,10 @@ impl Client {
         let list_identities_response =
             list_identities(&configuration, per_page, page, None).await?;
 
-        Ok(list_identities_response
+        list_identities_response
             .into_iter()
             .map(TryInto::try_into)
-            .collect::<Result<Vec<IdentityResponse<T>>>>()?)
+            .collect::<Result<Vec<IdentityResponse<T>>>>()
     }
 }
 
