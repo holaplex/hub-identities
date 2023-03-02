@@ -7,7 +7,7 @@ use hub_core::uuid::Uuid;
 use ory::kratos::client::Client;
 use poem::async_trait;
 
-use crate::graphql::object::User;
+use crate::graphql::objects::User;
 
 #[derive(Clone)]
 pub struct Loader {
