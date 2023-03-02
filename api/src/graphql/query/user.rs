@@ -1,7 +1,7 @@
 use async_graphql::{Context, Object, Result};
 use hub_core::uuid::Uuid;
 
-use crate::{graphql::object::User, AppContext};
+use crate::{graphql::objects::User, AppContext};
 
 #[derive(Default)]
 pub struct Query;

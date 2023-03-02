@@ -1,17 +1,17 @@
 use async_graphql::{ComplexObject, Context, Result, SimpleObject};
 use hub_core::uuid::Uuid;
 
-use crate::{graphql::object::user::User, AppContext};
+use crate::{graphql::objects::user::User, AppContext};
 
 #[derive(SimpleObject)]
 #[graphql(complex)]
-pub struct Member {
+pub struct Owner {
     #[graphql(external)]
     pub user_id: Uuid,
 }
 
 #[ComplexObject]
-impl Member {
+impl Owner {
     async fn user(&self, ctx: &Context<'_>) -> Result<Option<User>> {
         let AppContext { user_loader, .. } = ctx.data::<AppContext>()?;
 
