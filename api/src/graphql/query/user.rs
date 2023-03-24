@@ -8,6 +8,7 @@ pub struct Query;
 
 #[Object(name = "UserQuery")]
 impl Query {
+    /// Retrieve a user identity by providing their ID.
     async fn user(&self, ctx: &Context<'_>, id: Uuid) -> Result<Option<User>> {
         let AppContext { user_loader, .. } = ctx.data::<AppContext>()?;
 

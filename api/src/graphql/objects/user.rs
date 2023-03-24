@@ -17,13 +17,20 @@ pub struct IdentityTrait {
     pub email: String,
 }
 
+/// A unique user identity across the entire Holaplex ecosystem. A user can be associated with multiple organizations, but they are not required to have separate login credentials.
 #[derive(SimpleObject, Clone)]
 pub struct User {
+    /// The unique identifier for the user identity.
     id: Uuid,
+    /// The first name of the user identity.
     first_name: String,
+    /// The last name of the user identity.
     last_name: String,
+    /// The email address associated with the user identity.
     email: String,
+    /// The timestamp in UTC when the user identity was created.
     created_at: String,
+    /// The timestamp in UTC when the user identity was last updated.
     updated_at: String,
 }
 

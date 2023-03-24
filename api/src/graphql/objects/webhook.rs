@@ -12,6 +12,7 @@ pub struct Webhook {
 
 #[ComplexObject]
 impl Webhook {
+    /// The user who created the webhook.
     async fn created_by(&self, ctx: &Context<'_>) -> Result<Option<User>> {
         let AppContext { user_loader, .. } = ctx.data::<AppContext>()?;
 

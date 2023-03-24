@@ -12,6 +12,7 @@ pub struct Member {
 
 #[ComplexObject]
 impl Member {
+    /// The user identity who is a member of the organization.
     async fn user(&self, ctx: &Context<'_>) -> Result<Option<User>> {
         let AppContext { user_loader, .. } = ctx.data::<AppContext>()?;
 
