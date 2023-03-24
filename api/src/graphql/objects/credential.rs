@@ -12,6 +12,7 @@ pub struct Credential {
 
 #[ComplexObject]
 impl Credential {
+    /// This field represents the user who created the credential.
     async fn created_by(&self, ctx: &Context<'_>) -> Result<Option<User>> {
         let AppContext { user_loader, .. } = ctx.data::<AppContext>()?;
 

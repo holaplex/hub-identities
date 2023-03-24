@@ -1,5 +1,7 @@
 # Hub Identities
 
+Hub identities service manages all globally unique user identities and is responsible for user authentication. It provides a secure, robust, and scalable user authentication and management system.
+
 GraphQL API for interacting with [Ory Kratos](https://www.ory.sh/docs/kratos/ory-kratos-intro) admin API.
 
 # Workspaces
