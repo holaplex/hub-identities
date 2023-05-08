@@ -15,6 +15,7 @@ pub struct NameField {
 pub struct IdentityTrait {
     pub name: Option<NameField>,
     pub email: String,
+    pub profile_image: Option<String>,
 }
 
 /// A unique user identity across the entire Holaplex ecosystem. A user can be associated with multiple organizations, but they are not required to have separate login credentials.
@@ -28,6 +29,8 @@ pub struct User {
     last_name: String,
     /// The email address associated with the user identity.
     email: String,
+    /// The profile image associated with the user identity.
+    profile_image: String,
     /// The timestamp in UTC when the user identity was created.
     created_at: String,
     /// The timestamp in UTC when the user identity was last updated.
@@ -40,7 +43,7 @@ impl From<IdentityResponse<IdentityTrait>> for User {
             id,
             created_at,
             updated_at,
-            identity_trait: IdentityTrait { email, name },
+            identity_trait: IdentityTrait { email, name, profile_image },
             ..
         }: IdentityResponse<IdentityTrait>,
     ) -> Self {
@@ -54,6 +57,7 @@ impl From<IdentityResponse<IdentityTrait>> for User {
             first_name: name.first_name,
             last_name: name.last_name,
             email,
+            profile_image: profile_image.unwrap_or_default(),
             created_at,
             updated_at,
         }
