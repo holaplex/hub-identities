@@ -39,7 +39,7 @@
             }
           }
         },
-        "profileImage": {
+        "profile_image": {
           "title": "Profile Image URL",
           "type": "string",
           "format": "uri"

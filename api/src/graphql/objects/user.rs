@@ -30,7 +30,7 @@ pub struct User {
     /// The email address associated with the user identity.
     email: String,
     /// The profile image associated with the user identity.
-    profile_image: String,
+    profile_image: Option<String>,
     /// The timestamp in UTC when the user identity was created.
     created_at: String,
     /// The timestamp in UTC when the user identity was last updated.
@@ -62,7 +62,7 @@ impl From<IdentityResponse<IdentityTrait>> for User {
             first_name: name.first_name,
             last_name: name.last_name,
             email,
-            profile_image: profile_image.unwrap_or_default(),
+            profile_image,
             created_at,
             updated_at,
         }
