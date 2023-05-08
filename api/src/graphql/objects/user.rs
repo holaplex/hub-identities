@@ -43,7 +43,12 @@ impl From<IdentityResponse<IdentityTrait>> for User {
             id,
             created_at,
             updated_at,
-            identity_trait: IdentityTrait { email, name, profile_image },
+            identity_trait:
+                IdentityTrait {
+                    email,
+                    name,
+                    profile_image,
+                },
             ..
         }: IdentityResponse<IdentityTrait>,
     ) -> Self {
