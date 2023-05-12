@@ -60,4 +60,4 @@ jobs:
           token: ${{ secrets.ACTIONS_TOKEN }}
           workflow: release.yml
           repo: holaplex/hub-kubes
-          inputs: '{ "service": "identities", "identities": "prod", "commit_hash": "${{ github.sha }}"}'
+          inputs: '{ "service": "identities", "environment": "prod", "commit_hash": "${{ github.sha }}"}'
